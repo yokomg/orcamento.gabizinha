@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Meu Orçamento Mensal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== VARIÁVEIS DE CORES ===== */
+        :root {
+            /* Modo Claro (default) */
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --success: #00b894;
+            --danger: #ff6b6b;
+            --warning: #feca57;
+            --info: #54a0ff;
+            
+            --salary: #00b894;
+            --salary-dark: #00a085;
+            
+            --background: #f8f9fa;
+            --surface: #ffffff;
+            --surface-alt: #f1f2f6;
+            
+            --text-primary: #2d3436;
+            --text-secondary: #636e72;
+            --text-muted: #b2bec3;
+            
+            --border: #dfe6e9;
+            --border-light: #f1f2f6;
+            
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 20px var(--shadow-color);
+            
+            --border-radius: 20px;
+            --safe-zone: 1rem;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            /* Modo Escuro */
+            --primary: #6c5ce7;
+            --primary-dark: #5b4bd8;
+            --secondary: #a29bfe;
+            --success: #00cec9;
+            --danger: #ff7675;
+            --warning: #fdcb6e;
+            --info: #74b9ff;
+            
+            --salary: #00cec9;
+            --salary-dark: #00b5b2;
+            
+            --background: #0f1419;
+            --surface: #1a2026;
+            --surface-alt: #242c33;
+            
+            --text-primary: #f8f9fa;
+            --text-secondary: #adb5bd;
+            --text-muted: #6c757d;
+            
+            --border: #2d3740;
+            --border-light: #37424b;
+            
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* ===== RESET E BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, 'Segoe UI Emoji', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: var(--safe-zone);
+            min-height: 100vh;
+            transition: var(--transition);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ===== TOGGLE DO TEMA ===== */
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+            border-color: var(--primary);
+        }
+
+        .theme-toggle i {
+            font-size: 1.4rem;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+
+        [data-theme="dark"] .theme-toggle i {
+            transform: rotate(180deg);
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem 1.5rem;
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            font-size: 2rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.875rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.5;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ===== MONTH SELECTOR ===== */
+        .month-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .current-month {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 12px;
+            background: var(--surface-alt);
+        }
+
+        .month-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .month-nav .btn {
+            flex: 1;
+            padding: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* ===== SUMMARY CARDS ===== */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .summary-salary::before {
+            background: linear-gradient(90deg, var(--salary), var(--success));
+        }
+
+        .summary-income::before {
+            background: linear-gradient(90deg, var(--info), var(--primary));
+        }
+
+        .summary-expense::before {
+            background: linear-gradient(90deg, var(--danger), var(--warning));
+        }
+
+        .summary-available::before {
+            background: linear-gradient(90deg, var(--secondary), #d56efd);
+        }
+
+        .summary-card:active {
+            transform: translateY(-4px);
+        }
+
+        .summary-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .summary-card .amount {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .summary-salary .amount {
+            color: var(--salary);
+        }
+
+        .summary-income .amount {
+            color: var(--info);
+        }
+
+        .summary-expense .amount {
+            color: var(--danger);
+        }
+
+        .summary-available .amount {
+            color: var(--secondary);
+            font-size: 1.5rem;
+        }
+
+        /* ===== SALARY SECTION ===== */
+        .salary-section {
+            background: linear-gradient(135deg, rgba(0, 184, 148, 0.1) 0%, rgba(108, 92, 231, 0.05) 100%);
+            border: 2px solid rgba(0, 184, 148, 0.2);
+            border-radius: var(--border-radius);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .salary-section {
+            background: linear-gradient(135deg, rgba(0, 206, 201, 0.15) 0%, rgba(108, 92, 231, 0.08) 100%);
+            border-color: rgba(0, 206, 201, 0.3);
+        }
+
+        .salary-section h2 {
+            color: var(--salary-dark);
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+
+        .salary-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ===== PROGRESS BAR ===== */
+        .progress-container {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 184, 148, 0.2);
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        .progress-bar {
+            height: 12px;
+            background-color: var(--surface-alt);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--salary) 0%, var(--success) 100%);
+            border-radius: 6px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .progress-danger .progress-fill {
+            background: linear-gradient(90deg, var(--danger) 0%, var(--warning) 100%);
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .salary-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            background: rgba(0, 184, 148, 0.1);
+            padding: 1.25rem;
+            border-radius: calc(var(--border-radius) - 4px);
+            margin-top: 1rem;
+            border: 1px solid rgba(0, 184, 148, 0.2);
+        }
+
+        [data-theme="dark"] .salary-info {
+            background: rgba(0, 206, 201, 0.15);
+            border-color: rgba(0, 206, 201, 0.3);
+        }
+
+        .salary-info-item {
+            text-align: center;
+        }
+
+        .salary-info-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.375rem;
+            font-weight: 500;
+        }
+
+        .salary-info-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--salary);
+        }
+
+        /* ===== CARDS E FORMULÁRIOS ===== */
+        .card {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--info));
+        }
+
+        .card h2 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+
+        /* ===== FORM ELEMENTS ===== */
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.625rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        label i {
+            color: var(--primary);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--surface);
+            color: var(--text-primary);
+            -webkit-appearance: none;
+            appearance: none;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            background: var(--surface-alt);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23636e72' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px;
+            padding-right: 3rem;
+        }
+
+        [data-theme="dark"] select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23adb5bd' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            touch-action: manipulation;
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn:active::after {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-salary {
+            background: linear-gradient(135deg, var(--salary) 0%, var(--salary-dark) 100%);
+            color: white;
+        }
+
+        .btn-salary:hover {
+            box-shadow: 0 6px 20px rgba(0, 184, 148, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #00a085 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #ff5252 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #ff9f43 100%);
+            color: white;
+        }
+
+        .btn-full {
+            width: 100%;
+            padding: 1.25rem;
+        }
+
+        .btn-small {
+            padding: 0.875rem 1.25rem;
+            font-size: 0.95rem;
+        }
+
+        /* ===== TRANSACTIONS LIST ===== */
+        #transactions-container {
+            max-height: 400px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 1.5rem 0;
+            padding-right: 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--surface-alt);
+        }
+
+        #transactions-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #transactions-container::-webkit-scrollbar-track {
+            background: var(--surface-alt);
+            border-radius: 3px;
+        }
+
+        #transactions-container::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .transaction-item {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            transition: var(--transition);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .transaction-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow-color);
+        }
+
+        .transaction-item:active {
+            transform: translateY(1px);
+        }
+
+        .transaction-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .income-transaction .transaction-icon {
+            background: linear-gradient(135deg, var(--info) 0%, var(--primary) 100%);
+            color: white;
+        }
+
+        .expense-transaction .transaction-icon {
+            background: linear-gradient(135deg, var(--danger) 0%, #ff5252 100%);
+            color: white;
+        }
+
+        .transaction-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .transaction-title {
+            font-weight: 600;
+            margin-bottom: 0.375rem;
+            font-size: 1rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .transaction-details {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .transaction-category {
+            background: var(--surface-alt);
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .income-transaction .transaction-amount {
+            color: var(--info);
+        }
+
+        .expense-transaction .transaction-amount {
+            color: var(--danger);
+        }
+
+        .transaction-delete {
+            background: none;
+            border: none;
+            color: var(--danger);
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .transaction-delete:hover {
+            background: rgba(255, 107, 107, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* ===== NO DATA STATE ===== */
+        .no-data {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .no-data i {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: var(--border);
+            opacity: 0.5;
+        }
+
+        .no-data p {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .no-data p:last-child {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* ===== ACTIONS SECTION ===== */
+        .actions-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* ===== FOOTER ===== */
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        footer p {
+            margin-bottom: 0.75rem;
+        }
+
+        footer i {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+
+        /* ===== NOTIFICATION ===== */
+        .notification {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-30px);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            max-width: 90%;
+            width: auto;
+            min-width: 200px;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, var(--success) 0%, #00a085 100%);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, var(--danger) 0%, #ff5252 100%);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, var(--info) 0%, var(--primary) 100%);
+        }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            padding: 0.875rem var(--safe-zone);
+            gap: 0.75rem;
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            box-shadow: 0 -4px 20px var(--shadow-color);
+        }
+
+        .bottom-nav .btn {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            background: var(--surface-alt);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .bottom-nav .btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .container {
+            padding-bottom: 100px;
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .salary-amount-input {
+            position: relative;
+        }
+
+        .salary-amount-input::before {
+            content: "R$";
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 1.1rem;
+            z-index: 1;
+        }
+
+        .salary-amount-input input {
+            padding-left: 3.5rem;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (min-width: 640px) {
+            :root {
+                --safe-zone: 1.5rem;
+                --border-radius: 24px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            .summary-cards {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1.25rem;
+            }
+
+            .summary-card {
+                padding: 1.75rem;
+            }
+
+            .summary-card .amount {
+                font-size: 1.8rem;
+            }
+
+            .actions-section {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .salary-form {
+                grid-template-columns: repeat(2, 1fr);
+                display: grid;
+            }
+        }
+
+        @media (min-width: 768px) {
+            :root {
+                --safe-zone: 2rem;
+            }
+
+            .container {
+                max-width: 768px;
+            }
+
+            .month-selector {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .month-nav {
+                flex: 0 0 auto;
+                width: auto;
+            }
+
+            .transaction-item {
+                padding: 1.5rem;
+            }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card, .summary-card, .salary-section, .month-selector, header {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* ===== LOADING STATES ===== */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botão de Toggle do Tema -->
+    <div class="theme-toggle" id="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-wallet"></i> Meu Orçamento</h1>
+            <p class="subtitle">Controle suas finanças com clareza e precisão</p>
+        </header>
+
+        <!-- Seletor de Mês -->
+        <div class="month-selector">
+            <div class="current-month" id="current-month">Carregando...</div>
+            <div class="month-nav">
+                <button class="btn btn-warning btn-small" id="prev-month">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="btn btn-primary btn-small" id="next-month">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cards de Resumo -->
+        <div class="summary-cards">
+            <div class="summary-card summary-salary" onclick="budgetApp.focusSalaryInput()">
+                <h3><i class="fas fa-hand-holding-usd"></i> Salário</h3>
+                <div class="amount" id="total-salary">R$ 0,00</div>
+            </div>
+            <div class="summary-card summary-income">
+                <h3><i class="fas fa-money-bill-wave"></i> Outras Entradas</h3>
+                <div class="amount" id="total-income">R$ 0,00</div>
+            </div>
+            <div class="summary-card summary-expense">
+                <h3><i class="fas fa-shopping-cart"></i> Gastos</h3>
+                <div class="amount" id="total-expense">R$ 0,00</div>
+            </div>
+            <div class="summary-card summary-available">
+                <h3><i class="fas fa-piggy-bank"></i> Disponível</h3>
+                <div class="amount" id="available-balance">R$ 0,00</div>
+            </div>
+        </div>
+
+        <!-- Seção de Salário -->
+        <div class="salary-section">
+            <h2><i class="fas fa-briefcase"></i> Meu Salário</h2>
+            <div class="salary-form">
+                <div class="form-group salary-amount-input">
+                    <label for="salary-amount"><i class="fas fa-money-bill"></i> Valor</label>
+                    <input type="number" id="salary-amount" step="0.01" min="0" placeholder="0,00" inputmode="decimal">
+                </div>
+                <div class="form-group">
+                    <label for="salary-source"><i class="fas fa-building"></i> Fonte</label>
+                    <select id="salary-source">
+                        <option value="">De onde vem?</option>
+                        <option value="trabalho">Trabalho</option>
+                        <option value="freelance">Freelance</option>
+                        <option value="investimentos">Investimentos</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-salary btn-full" id="set-salary">
+                <i class="fas fa-check-circle"></i> Definir Salário
+            </button>
+            
+            <!-- Barra de Progresso -->
+            <div class="progress-container" id="progress-container" style="display: none;">
+                <div class="progress-label">
+                    <span>Uso do Salário</span>
+                    <span id="salary-percentage">0%</span>
+                </div>
+                <div class="progress-bar" id="salary-progress-bar">
+                    <div class="progress-fill" id="salary-progress-fill" style="width: 0%"></div>
+                </div>
+                
+                <div class="salary-info">
+                    <div class="salary-info-item">
+                        <div class="salary-info-label">Salário</div>
+                        <div class="salary-info-value" id="info-total-salary">R$ 0,00</div>
+                    </div>
+                    <div class="salary-info-item">
+                        <div class="salary-info-label">Usado</div>
+                        <div class="salary-info-value" id="info-used-salary">R$ 0,00</div>
+                    </div>
+                    <div class="salary-info-item">
+                        <div class="salary-info-label">Sobra</div>
+                        <div class="salary-info-value" id="info-available-salary">R$ 0,00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário de Transação -->
+        <div class="card">
+            <h2><i class="fas fa-plus-circle"></i> Nova Transação</h2>
+            <form id="transaction-form">
+                <div class="form-group">
+                    <label for="description"><i class="fas fa-edit"></i> Descrição</label>
+                    <input type="text" id="description" placeholder="Ex: Supermercado, Salário..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount"><i class="fas fa-money-bill-wave"></i> Valor (R$)</label>
+                    <input type="number" id="amount" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="type"><i class="fas fa-exchange-alt"></i> Tipo</label>
+                    <select id="type" required>
+                        <option value="">Selecione...</option>
+                        <option value="income">Receita</option>
+                        <option value="expense">Despesa</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="category"><i class="fas fa-tag"></i> Categoria</label>
+                    <select id="category" required>
+                        <option value="">Selecione...</option>
+                        <option value="food">Alimentação</option>
+                        <option value="transport">Transporte</option>
+                        <option value="home">Casa</option>
+                        <option value="leisure">Lazer</option>
+                        <option value="health">Saúde</option>
+                        <option value="other">Outros</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date"><i class="fas fa-calendar"></i> Data</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">
+                    <i class="fas fa-check"></i> Adicionar Transação
+                </button>
+            </form>
+        </div>
+
+        <!-- Lista de Transações -->
+        <div class="card">
+            <h2><i class="fas fa-history"></i> Histórico de Transações</h2>
+            <div id="transactions-container">
+                <div class="no-data">
+                    <i class="fas fa-receipt"></i>
+                    <p>Nenhuma transação ainda</p>
+                    <p>Adicione seu salário e gastos</p>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="actions-section">
+                <button class="btn btn-success" id="export-data">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+                <button class="btn btn-warning" id="import-data">
+                    <i class="fas fa-upload"></i> Importar
+                </button>
+                <button class="btn btn-danger" id="clear-month">
+                    <i class="fas fa-trash"></i> Limpar
+                </button>
+            </div>
+        </div>
+
+        <!-- Rodapé -->
+        <footer>
+            <p><i class="fas fa-lock"></i> Seus dados são salvos apenas no seu dispositivo</p>
+            <p><i class="fas fa-sync-alt"></i> Clique no ícone no canto superior direito para mudar o tema</p>
+        </footer>
+    </div>
+
+    <!-- Navegação Inferior -->
+    <div class="bottom-nav">
+        <button class="btn" onclick="budgetApp.quickAddSalary()">
+            <i class="fas fa-plus"></i> Salário
+        </button>
+        <button class="btn" onclick="budgetApp.quickAddExpense()">
+            <i class="fas fa-minus"></i> Gasto
+        </button>
+        <button class="btn" onclick="budgetApp.showSummary()">
+            <i class="fas fa-chart-pie"></i> Resumo
+        </button>
+    </div>
+
+    <!-- Notificação -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // ==================== SISTEMA DE TEMA ====================
+        class ThemeManager {
+            constructor() {
+                this.themeToggle = document.getElementById('theme-toggle');
+                this.themeIcon = this.themeToggle.querySelector('i');
+                this.init();
+            }
+            
+            init() {
+                // Carregar tema salvo ou usar preferência do sistema
+                const savedTheme = localStorage.getItem('budgetAppTheme');
+                const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                if (savedTheme) {
+                    this.setTheme(savedTheme);
+                } else if (systemPrefersDark) {
+                    this.setTheme('dark');
+                }
+                
+                // Configurar toggle
+                this.themeToggle.addEventListener('click', () => this.toggleTheme());
+                
+                // Atualizar ícone
+                this.updateIcon();
+            }
+            
+            setTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('budgetAppTheme', theme);
+                this.updateIcon();
+            }
+            
+            toggleTheme() {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                this.setTheme(newTheme);
+            }
+            
+            updateIcon() {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (currentTheme === 'dark') {
+                    this.themeIcon.className = 'fas fa-sun';
+                } else {
+                    this.themeIcon.className = 'fas fa-moon';
+                }
+            }
+        }
+
+        // ==================== CLASSES DO APP ====================
+        class Transaction {
+            constructor(id, description, amount, type, category, date) {
+                this.id = id;
+                this.description = description;
+                this.amount = parseFloat(amount);
+                this.type = type;
+                this.category = category;
+                this.date = date;
+                this.month = new Date(date).getMonth();
+                this.year = new Date(date).getFullYear();
+                this.createdAt = new Date().toISOString();
+            }
+            
+            get isIncome() {
+                return this.type === 'income';
+            }
+            
+            get isExpense() {
+                return this.type === 'expense';
+            }
+        }
+
+        class Salary {
+            constructor(amount = 0, source = '', month = null, year = null) {
+                this.amount = parseFloat(amount);
+                this.source = source;
+                this.month = month;
+                this.year = year;
+                this.updatedAt = new Date().toISOString();
+            }
+            
+            isValidForMonth(month, year) {
+                return this.amount > 0 && this.month === month && this.year === year;
+            }
+            
+            reset() {
+                this.amount = 0;
+                this.source = '';
+            }
+        }
+
+        class BudgetCalculator {
+            static calculateSummary(transactions, salary, currentMonth, currentYear) {
+                let totalSalary = salary.isValidForMonth(currentMonth, currentYear) ? salary.amount : 0;
+                let totalIncome = 0;
+                let totalExpense = 0;
+                
+                transactions.forEach(transaction => {
+                    if (transaction.month === currentMonth && transaction.year === currentYear) {
+                        if (transaction.isIncome) {
+                            totalIncome += transaction.amount;
+                        } else if (transaction.isExpense) {
+                            totalExpense += transaction.amount;
+                        }
+                    }
+                });
+                
+                const totalBalance = totalSalary + totalIncome - totalExpense;
+                const availableFromSalary = Math.max(0, totalSalary - totalExpense);
+                
+                return {
+                    salary: totalSalary,
+                    income: totalIncome,
+                    expense: totalExpense,
+                    balance: totalBalance,
+                    available: availableFromSalary,
+                    percentage: totalSalary > 0 ? Math.min(100, (totalExpense / totalSalary) * 100) : 0
+                };
+            }
+        }
+
+        class BudgetStorage {
+            static DB_NAME = 'budgetAppDB';
+            
+            static save(data) {
+                try {
+                    localStorage.setItem(this.DB_NAME, JSON.stringify(data));
+                    return true;
+                } catch (error) {
+                    console.error('Erro ao salvar dados:', error);
+                    return false;
+                }
+            }
+            
+            static load() {
+                try {
+                    const data = localStorage.getItem(this.DB_NAME);
+                    if (data) {
+                        return JSON.parse(data);
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar dados:', error);
+                }
+                return null;
+            }
+            
+            static exportData(transactions, salary) {
+                const data = {
+                    app: 'BudgetApp',
+                    version: '4.0',
+                    exportDate: new Date().toISOString(),
+                    salary: salary,
+                    transactions: transactions
+                };
+                return JSON.stringify(data, null, 2);
+            }
+        }
+
+        class Notification {
+            static show(message, type = 'info') {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.className = `notification ${type}`;
+                
+                setTimeout(() => notification.classList.add('show'), 10);
+                setTimeout(() => notification.classList.remove('show'), 3000);
+            }
+        }
+
+        class BudgetUI {
+            constructor() {
+                this.currentMonth = new Date().getMonth();
+                this.currentYear = new Date().getFullYear();
+            }
+            
+            updateMonthDisplay() {
+                const months = [
+                    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+                ];
+                document.getElementById('current-month').textContent = 
+                    `${months[this.currentMonth]} ${this.currentYear}`;
+            }
+            
+            updateSummaryCards(summary) {
+                document.getElementById('total-salary').textContent = this.formatCurrency(summary.salary);
+                document.getElementById('total-income').textContent = this.formatCurrency(summary.income);
+                document.getElementById('total-expense').textContent = this.formatCurrency(summary.expense);
+                document.getElementById('available-balance').textContent = this.formatCurrency(summary.available);
+                
+                const availableEl = document.getElementById('available-balance');
+                availableEl.style.color = summary.available <= 0 && summary.salary > 0 ? 
+                    'var(--danger)' : 'var(--secondary)';
+            }
+            
+            updateSalaryProgress(summary) {
+                const progressContainer = document.getElementById('progress-container');
+                
+                if (summary.salary > 0) {
+                    progressContainer.style.display = 'block';
+                    
+                    const progressFill = document.getElementById('salary-progress-fill');
+                    const percentageText = document.getElementById('salary-percentage');
+                    const progressBar = document.getElementById('salary-progress-bar');
+                    
+                    progressFill.style.width = `${summary.percentage}%`;
+                    percentageText.textContent = `${summary.percentage.toFixed(1)}%`;
+                    
+                    if (summary.percentage > 80) {
+                        progressBar.classList.add('progress-danger');
+                    } else {
+                        progressBar.classList.remove('progress-danger');
+                    }
+                    
+                    document.getElementById('info-total-salary').textContent = this.formatCurrency(summary.salary);
+                    document.getElementById('info-used-salary').textContent = this.formatCurrency(Math.min(summary.expense, summary.salary));
+                    document.getElementById('info-available-salary').textContent = this.formatCurrency(Math.max(0, summary.salary - summary.expense));
+                } else {
+                    progressContainer.style.display = 'none';
+                }
+            }
+            
+            updateTransactionsList(transactions) {
+                const container = document.getElementById('transactions-container');
+                
+                if (transactions.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-receipt"></i>
+                            <p>Nenhuma transação ainda</p>
+                            <p>Adicione seu salário e gastos</p>
+                        </div>
+                    `;
+                } else {
+                    transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
+                    let html = '<div class="transaction-list">';
+                    
+                    transactions.forEach(transaction => {
+                        const icon = this.getTransactionIcon(transaction.category);
+                        const typeClass = `${transaction.type}-transaction`;
+                        const amountClass = transaction.isExpense ? 'expense' : 'income';
+                        const amountPrefix = transaction.isExpense ? '- ' : '+ ';
+                        const categoryName = this.getCategoryName(transaction.category);
+                        
+                        html += `
+                            <div class="transaction-item ${typeClass}" data-id="${transaction.id}">
+                                <div class="transaction-icon">
+                                    <i class="${icon}"></i>
+                                </div>
+                                <div class="transaction-content">
+                                    <div class="transaction-title">${transaction.description}</div>
+                                    <div class="transaction-details">
+                                        <span class="transaction-category">${categoryName}</span>
+                                        <span>${this.formatDate(transaction.date)}</span>
+                                    </div>
+                                </div>
+                                <div class="transaction-amount ${amountClass}">
+                                    ${amountPrefix}${this.formatCurrency(transaction.amount)}
+                                </div>
+                                <button class="transaction-delete" onclick="budgetApp.deleteTransaction(${transaction.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                    container.innerHTML = html;
+                }
+            }
+            
+            getTransactionIcon(category) {
+                const icons = {
+                    'food': 'fas fa-utensils',
+                    'transport': 'fas fa-car',
+                    'home': 'fas fa-home',
+                    'leisure': 'fas fa-film',
+                    'health': 'fas fa-heartbeat',
+                    'other': 'fas fa-receipt'
+                };
+                return icons[category] || 'fas fa-receipt';
+            }
+            
+            getCategoryName(category) {
+                const names = {
+                    'food': 'Alimentação',
+                    'transport': 'Transporte',
+                    'home': 'Casa',
+                    'leisure': 'Lazer',
+                    'health': 'Saúde',
+                    'other': 'Outros'
+                };
+                return names[category] || 'Outros';
+            }
+            
+            formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value || 0);
+            }
+            
+            formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('pt-BR');
+            }
+            
+            focusSalaryInput() {
+                document.getElementById('salary-amount').focus();
+            }
+            
+            setupFormListeners(onAddTransaction, onSetSalary) {
+                document.getElementById('transaction-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    onAddTransaction();
+                });
+                
+                document.getElementById('set-salary').addEventListener('click', onSetSalary);
+                
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('date').value = today;
+            }
+            
+            getFormData() {
+                return {
+                    description: document.getElementById('description').value.trim(),
+                    amount: document.getElementById('amount').value,
+                    type: document.getElementById('type').value,
+                    category: document.getElementById('category').value,
+                    date: document.getElementById('date').value
+                };
+            }
+            
+            getSalaryFormData() {
+                return {
+                    amount: document.getElementById('salary-amount').value,
+                    source: document.getElementById('salary-source').value
+                };
+            }
+            
+            clearTransactionForm() {
+                document.getElementById('transaction-form').reset();
+                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        // ==================== APLICAÇÃO PRINCIPAL ====================
+        class BudgetApp {
+            constructor() {
+                this.ui = new BudgetUI();
+                this.transactions = [];
+                this.salary = new Salary();
+                this.currentMonth = new Date().getMonth();
+                this.currentYear = new Date().getFullYear();
+                
+                this.init();
+            }
+            
+            init() {
+                this.loadData();
+                this.ui.updateMonthDisplay();
+                this.setupEventListeners();
+                this.updateUI();
+            }
+            
+            loadData() {
+                const saved = BudgetStorage.load();
+                if (saved) {
+                    this.salary = new Salary(
+                        saved.salary?.amount || 0,
+                        saved.salary?.source || '',
+                        saved.salary?.month,
+                        saved.salary?.year
+                    );
+                    
+                    this.transactions = (saved.transactions || []).map(t => new Transaction(
+                        t.id,
+                        t.description,
+                        t.amount,
+                        t.type,
+                        t.category,
+                        t.date
+                    ));
+                }
+            }
+            
+            saveData() {
+                const data = {
+                    salary: this.salary,
+                    transactions: this.transactions
+                };
+                BudgetStorage.save(data);
+            }
+            
+            setupEventListeners() {
+                this.ui.setupFormListeners(
+                    () => this.addTransaction(),
+                    () => this.setSalary()
+                );
+                
+                document.getElementById('prev-month').addEventListener('click', () => this.previousMonth());
+                document.getElementById('next-month').addEventListener('click', () => this.nextMonth());
+                document.getElementById('export-data').addEventListener('click', () => this.exportData());
+                document.getElementById('import-data').addEventListener('click', () => this.importData());
+                document.getElementById('clear-month').addEventListener('click', () => this.clearCurrentMonth());
+            }
+            
+            addTransaction() {
+                const formData = this.ui.getFormData();
+                
+                if (!formData.description || !formData.amount || !formData.type || !formData.category || !formData.date) {
+                    Notification.show('Preencha todos os campos!', 'error');
+                    return;
+                }
+                
+                const amount = parseFloat(formData.amount);
+                if (isNaN(amount) || amount <= 0) {
+                    Notification.show('Informe um valor válido!', 'error');
+                    return;
+                }
+                
+                const transactionDate = new Date(formData.date);
+                if (transactionDate.getMonth() !== this.currentMonth || 
+                    transactionDate.getFullYear() !== this.currentYear) {
+                    if (!confirm('Esta transação não é do mês atual. Adicionar mesmo assim?')) {
+                        return;
+                    }
+                }
+                
+                const transaction = new Transaction(
+                    Date.now(),
+                    formData.description,
+                    amount,
+                    formData.type,
+                    formData.category,
+                    formData.date
+                );
+                
+                this.transactions.push(transaction);
+                this.saveData();
+                this.ui.clearTransactionForm();
+                this.updateUI();
+                
+                Notification.show('Transação adicionada!', 'success');
+            }
+            
+            deleteTransaction(id) {
+                if (!confirm('Excluir esta transação?')) {
+                    return;
+                }
+                
+                this.transactions = this.transactions.filter(t => t.id !== id);
+                this.saveData();
+                this.updateUI();
+                
+                Notification.show('Transação excluída!', 'success');
+            }
+            
+            setSalary() {
+                const formData = this.ui.getSalaryFormData();
+                const amount = parseFloat(formData.amount);
+                
+                if (isNaN(amount) || amount <= 0) {
+                    Notification.show('Informe um valor válido para o salário!', 'error');
+                    return;
+                }
+                
+                if (!formData.source) {
+                    Notification.show('Selecione a fonte do salário!', 'error');
+                    return;
+                }
+                
+                if (this.salary.isValidForMonth(this.currentMonth, this.currentYear)) {
+                    if (!confirm('Já existe um salário definido para este mês. Deseja substituí-lo?')) {
+                        return;
+                    }
+                }
+                
+                this.salary = new Salary(amount, formData.source, this.currentMonth, this.currentYear);
+                this.saveData();
+                this.updateUI();
+                
+                document.getElementById('progress-container').style.display = 'block';
+                Notification.show(`Salário de ${this.ui.formatCurrency(amount)} definido!`, 'success');
+            }
+            
+            getCurrentMonthTransactions() {
+                return this.transactions.filter(t => 
+                    t.month === this.currentMonth && t.year === this.currentYear
+                );
+            }
+            
+            calculateSummary() {
+                const currentTransactions = this.getCurrentMonthTransactions();
+                return BudgetCalculator.calculateSummary(
+                    currentTransactions,
+                    this.salary,
+                    this.currentMonth,
+                    this.currentYear
+                );
+            }
+            
+            updateUI() {
+                const summary = this.calculateSummary();
+                const currentTransactions = this.getCurrentMonthTransactions();
+                
+                this.ui.updateSummaryCards(summary);
+                this.ui.updateSalaryProgress(summary);
+                this.ui.updateTransactionsList(currentTransactions);
+                
+                if (this.salary.isValidForMonth(this.currentMonth, this.currentYear)) {
+                    document.getElementById('salary-amount').value = this.salary.amount;
+                    document.getElementById('salary-source').value = this.salary.source;
+                } else {
+                    document.getElementById('salary-amount').value = '';
+                    document.getElementById('salary-source').value = '';
+                }
+            }
+            
+            previousMonth() {
+                if (this.currentMonth === 0) {
+                    this.currentMonth = 11;
+                    this.currentYear--;
+                } else {
+                    this.currentMonth--;
+                }
+                this.ui.currentMonth = this.currentMonth;
+                this.ui.currentYear = this.currentYear;
+                this.ui.updateMonthDisplay();
+                this.updateUI();
+            }
+            
+            nextMonth() {
+                if (this.currentMonth === 11) {
+                    this.currentMonth = 0;
+                    this.currentYear++;
+                } else {
+                    this.currentMonth++;
+                }
+                this.ui.currentMonth = this.currentMonth;
+                this.ui.currentYear = this.currentYear;
+                this.ui.updateMonthDisplay();
+                this.updateUI();
+            }
+            
+            exportData() {
+                const dataStr = BudgetStorage.exportData(this.transactions, this.salary);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `orcamento_${this.currentYear}_${this.currentMonth + 1}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                Notification.show('Dados exportados!', 'success');
+            }
+            
+            importData() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'application/json';
+                
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (data && Array.isArray(data.transactions)) {
+                                if (confirm('Substituir todos os dados atuais?')) {
+                                    this.salary = new Salary(
+                                        data.salary?.amount || 0,
+                                        data.salary?.source || '',
+                                        data.salary?.month,
+                                        data.salary?.year
+                                    );
+                                    this.transactions = data.transactions.map(t => new Transaction(
+                                        t.id,
+                                        t.description,
+                                        t.amount,
+                                        t.type,
+                                        t.category,
+                                        t.date
+                                    ));
+                                } else {
+                                    const existingIds = new Set(this.transactions.map(t => t.id));
+                                    const newTransactions = data.transactions
+                                        .filter(t => !existingIds.has(t.id))
+                                        .map(t => new Transaction(
+                                            t.id,
+                                            t.description,
+                                            t.amount,
+                                            t.type,
+                                            t.category,
+                                            t.date
+                                        ));
+                                    this.transactions.push(...newTransactions);
+                                }
+                                
+                                this.saveData();
+                                this.updateUI();
+                                Notification.show('Dados importados!', 'success');
+                            } else {
+                                throw new Error('Formato inválido');
+                            }
+                        } catch (err) {
+                            Notification.show('Erro ao importar dados!', 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                
+                input.click();
+            }
+            
+            clearCurrentMonth() {
+                if (!confirm('Limpar TODOS os dados deste mês?')) {
+                    return;
+                }
+                
+                if (this.salary.isValidForMonth(this.currentMonth, this.currentYear)) {
+                    this.salary.reset();
+                }
+                
+                this.transactions = this.transactions.filter(t => 
+                    !(t.month === this.currentMonth && t.year === this.currentYear)
+                );
+                
+                this.saveData();
+                this.updateUI();
+                
+                Notification.show('Mês limpo!', 'success');
+            }
+            
+            quickAddSalary() {
+                document.getElementById('type').value = 'income';
+                document.getElementById('category').value = 'other';
+                document.getElementById('description').value = 'Salário';
+                document.getElementById('description').focus();
+            }
+            
+            quickAddExpense() {
+                document.getElementById('type').value = 'expense';
+                document.getElementById('category').value = 'other';
+                document.getElementById('description').value = '';
+                document.getElementById('description').focus();
+            }
+            
+            showSummary() {
+                const summary = this.calculateSummary();
+                
+                const message = `
+📊 RESUMO DO MÊS
+-----------------
+💰 Salário: ${this.ui.formatCurrency(summary.salary)}
+📈 Outras entradas: ${this.ui.formatCurrency(summary.income)}
+💸 Gastos: ${this.ui.formatCurrency(summary.expense)}
+🏦 Saldo total: ${this.ui.formatCurrency(summary.balance)}
+🎯 Disponível do salário: ${this.ui.formatCurrency(summary.available)}
+📊 Uso do salário: ${summary.percentage.toFixed(1)}%
+                `.trim();
+                
+                alert(message);
+            }
+            
+            focusSalaryInput() {
+                this.ui.focusSalaryInput();
+            }
+        }
+
+        // ==================== INICIALIZAÇÃO ====================
+        let budgetApp;
+        let themeManager;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializar gerenciador de tema
+            themeManager = new ThemeManager();
+            
+            // Inicializar aplicação
+            budgetApp = new BudgetApp();
+            
+            // Expor métodos globais
+            window.budgetApp = budgetApp;
+        });
+    </script>
+</body>
+</html>
